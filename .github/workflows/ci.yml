@@ -1,0 +1,24 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the domain
+        run: cd compose && docker compose up -d --build
+      - name: Wait for the domain controller
+        run: |
+          for i in $(seq 1 60); do
+            docker exec dc1 samba-tool domain info 127.0.0.1 >/dev/null 2>&1 && break
+            sleep 5
+          done
+          docker exec dc1 samba-tool domain info 127.0.0.1
+      - name: Build the directory
+        run: docker exec dc1 bash /scripts/setup_directory.sh
+      - name: Join the client
+        run: docker exec client1 bash /scripts/join_domain.sh
+      - name: Verify
+        run: bash tests/test_directory.sh
+      - name: Audit report
+        run: docker exec dc1 bash /scripts/audit_report.sh

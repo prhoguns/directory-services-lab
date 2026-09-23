@@ -1,0 +1,46 @@
+services:
+  dc1:
+    build:
+      context: .
+      dockerfile: Dockerfile.dc
+    container_name: dc1
+    hostname: dc1
+    privileged: true
+    environment:
+      REALM: LAB.EXAMPLE.COM
+      DOMAIN: LAB
+      ADMIN_PASS: LabAdminPass123!
+    networks:
+      lab:
+        ipv4_address: 172.28.10.10
+    volumes:
+      - dcdata:/var/lib/samba
+      - dcconf:/etc/samba
+      - ../scripts:/scripts:ro
+      - ../tests:/tests:ro
+
+  client1:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: client1
+    hostname: client1
+    privileged: true
+    depends_on: [dc1]
+    dns: [172.28.10.10]
+    networks:
+      lab:
+        ipv4_address: 172.28.10.20
+    volumes:
+      - ../scripts:/scripts:ro
+      - ../tests:/tests:ro
+
+networks:
+  lab:
+    ipam:
+      config:
+        - subnet: 172.28.10.0/24
+
+volumes:
+  dcdata:
+  dcconf:
