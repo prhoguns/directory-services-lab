@@ -1,6 +1,6 @@
 # A domain member: joins the domain and authenticates users against it, the Linux equivalent of a
 # workstation joined to Active Directory.
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
       winbind libpam-winbind libnss-winbind samba-common-bin krb5-user smbclient ldap-utils \
